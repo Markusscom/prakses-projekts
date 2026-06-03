@@ -8,6 +8,17 @@ import JoinQuiz from "./pages/JoinQuiz";
 import PlayQuiz from "./pages/PlayQuiz";
 import Results from "./pages/Results";
 
+import { supabase } from "./lib/supabase";
+
+async function test() {
+  const { data, error } = await supabase.from("quizzes").select("*");
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+}
+
+test();
+
 function App() {
     return (
         <>
