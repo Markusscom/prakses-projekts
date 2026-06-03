@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 
 export default function JoinQuiz() {
@@ -6,9 +7,21 @@ export default function JoinQuiz() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const data = JSON.parse(localStorage.getItem("quizzes") || "[]");
-        setQuizzes(data);
+        fetchQuizzes();
     }, []);
+
+    async function fetchQuizzes() {
+        const { data, error } = await supabase
+            .from("quizzes")
+            .select("*");
+
+        console.log("DATA:", data);
+        console.log("ERROR:", error);
+
+        if (!error) {
+            setQuizzes(data);
+        }
+    }
 
     function startQuiz(quiz) {
         navigate("/play", { state: { quiz } });
@@ -18,17 +31,10 @@ export default function JoinQuiz() {
         <div style={{ padding: "20px" }}>
             <h1>Join Quiz</h1>
 
-            {quizzes.length === 0 && <p>No quizzes yet</p>}
+            {quizzes.length === 0 && <p>No quizzes found</p>}
 
             {quizzes.map((q) => (
-                <div
-                    key={q.id}
-                    style={{
-                        border: "1px solid black",
-                        padding: "10px",
-                        marginBottom: "10px"
-                    }}
-                >
+                <div key={q.id} style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
                     <h3>{q.title}</h3>
                     <button onClick={() => startQuiz(q)}>
                         Start
