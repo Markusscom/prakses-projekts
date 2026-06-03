@@ -1,27 +1,25 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-
-import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
+import Start from "./pages/Start";
+import Dashboard from "./pages/Dashboard";
+import Join from "./pages/Join";
 import CreateQuiz from "./pages/CreateQuiz";
-import JoinQuiz from "./pages/JoinQuiz";
 import PlayQuiz from "./pages/PlayQuiz";
 import Results from "./pages/Results";
 
-function App() {
+export default function App() {
     return (
-        <>
-            <Navbar />
-
+        <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Home />} />
+
+                <Route path="/" element={<Start />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/create" element={<CreateQuiz />} />
-                <Route path="/join" element={<JoinQuiz />} />
-                <Route path="/play" element={<PlayQuiz />} />
+                <Route path="/join" element={<Join />} />
+                <Route path="/play/:id" element={<PlayQuiz />} />
                 <Route path="/results" element={<Results />} />
+
             </Routes>
-        </>
+        </BrowserRouter>
     );
 }
-
-export default App;
