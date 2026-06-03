@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 export default function CreateQuiz() {
-    const navigate = useNavigate();
-
     const [title, setTitle] = useState("");
+
     const [questions, setQuestions] = useState([
         {
             question: "",
@@ -13,33 +12,28 @@ export default function CreateQuiz() {
         }
     ]);
 
-    // QUIZ TITLE
-    function handleTitleChange(e) {
+    function handleTitle(e) {
         setTitle(e.target.value);
     }
 
-    // QUESTION TEXT
     function updateQuestion(index, value) {
-        const updated = [...questions];
-        updated[index].question = value;
-        setQuestions(updated);
+        const copy = [...questions];
+        copy[index].question = value;
+        setQuestions(copy);
     }
 
-    // ANSWER TEXT
     function updateAnswer(qIndex, aIndex, value) {
-        const updated = [...questions];
-        updated[qIndex].answers[aIndex] = value;
-        setQuestions(updated);
+        const copy = [...questions];
+        copy[qIndex].answers[aIndex] = value;
+        setQuestions(copy);
     }
 
-    // CORRECT ANSWER
-    function setCorrectAnswer(qIndex, value) {
-        const updated = [...questions];
-        updated[qIndex].correctAnswer = value;
-        setQuestions(updated);
+    function setCorrect(qIndex, value) {
+        const copy = [...questions];
+        copy[qIndex].correctAnswer = Number(value);
+        setQuestions(copy);
     }
 
-    // ADD QUESTION
     function addQuestion() {
         setQuestions([
             ...questions,
@@ -51,67 +45,91 @@ export default function CreateQuiz() {
         ]);
     }
 
-    // REMOVE QUESTION
+    // remove question
     function removeQuestion(index) {
-        const updated = questions.filter((_, i) => i !== index);
-        setQuestions(updated);
+        const copy = questions.filter((_, i) => i !== index);
+        setQuestions(copy);
     }
 
-    // SAVE QUIZ (temporary localStorage)
-    function saveQuiz() {
-        const quiz = {
-            id: Date.now(),
-            title,
-            questions
-        };
+    // SAVE TO SUPABASE
+    async function saveQuiz() {
+        if (!title) {
+            alert("Ievadi nosaukumu!");
+            return;
+        }
 
-        const existing = JSON.parse(localStorage.getItem("quizzes") || "[]");
-        localStorage.setItem("quizzes", JSON.stringify([...existing, quiz]));
+        const { error } = await supabase
+            .from("quizzes")
+            .insert([
+                {
+                    title,
+                    questions
+                }
+            ]);
 
-        navigate("/join");
+        if (error) {
+            console.log(error);
+            alert("Kļūda saglabājot");
+        } else {
+            alert("Quiz saglabāts!");
+            setTitle("");
+            setQuestions([
+                {
+                    question: "",
+                    answers: ["", "", "", ""],
+                    correctAnswer: 0
+                }
+            ]);
+        }
     }
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>Create Quiz</h1>
 
+            {/* TITLE */}
             <input
                 placeholder="Quiz title"
                 value={title}
-                onChange={handleTitleChange}
+                onChange={handleTitle}
                 style={{ padding: "10px", width: "300px" }}
             />
 
             <hr />
 
+            {/* QUESTIONS */}
             {questions.map((q, qIndex) => (
-                <div key={qIndex} style={{ marginBottom: "30px" }}>
+                <div key={qIndex} style={{ marginBottom: "20px" }}>
                     <h3>Question {qIndex + 1}</h3>
 
                     <input
-                        placeholder="Question text"
+                        placeholder="Question"
                         value={q.question}
-                        onChange={(e) => updateQuestion(qIndex, e.target.value)}
-                        style={{ padding: "8px", width: "400px" }}
+                        onChange={(e) =>
+                            updateQuestion(qIndex, e.target.value)
+                        }
                     />
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "10px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginTop: "10px" }}>
                         {q.answers.map((ans, aIndex) => (
                             <input
                                 key={aIndex}
                                 placeholder={`Answer ${aIndex + 1}`}
                                 value={ans}
-                                onChange={(e) => updateAnswer(qIndex, aIndex, e.target.value)}
+                                onChange={(e) =>
+                                    updateAnswer(qIndex, aIndex, e.target.value)
+                                }
                             />
                         ))}
                     </div>
 
                     <div style={{ marginTop: "10px" }}>
                         <label>Correct answer: </label>
+
                         <select
                             value={q.correctAnswer}
                             onChange={(e) =>
-                                setCorrectAnswer(qIndex, Number(e.target.value))
+                                setCorrect(qIndex, e.target.value)
                             }
                         >
                             {q.answers.map((_, i) => (
@@ -122,11 +140,8 @@ export default function CreateQuiz() {
                         </select>
                     </div>
 
-                    <button
-                        onClick={() => removeQuestion(qIndex)}
-                        style={{ marginTop: "10px" }}
-                    >
-                        Delete Question
+                    <button onClick={() => removeQuestion(qIndex)}>
+                        Delete question
                     </button>
 
                     <hr />
