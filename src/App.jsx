@@ -9,7 +9,6 @@ import Results from "./pages/Results";
 
 export default function App() {
     return (
-        <BrowserRouter>
             <Routes>
 
                 <Route path="/" element={<Start />} />
@@ -20,6 +19,5 @@ export default function App() {
                 <Route path="/results" element={<Results />} />
 
             </Routes>
-        </BrowserRouter>
     );
 }
