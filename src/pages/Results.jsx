@@ -9,8 +9,17 @@ export default function Results() {
     useEffect(() => {
         load();
 
-        const t = setInterval(load, 2000);
-        return () => clearInterval(t);
+        const channel = supabase
+            .channel("results-" + code)
+            .on("postgres_changes", {
+                event: "*",
+                schema: "public",
+                table: "players",
+                filter: `room_code=eq.${code}`
+            }, load)
+            .subscribe();
+
+        return () => supabase.removeChannel(channel);
     }, []);
 
     async function load() {
@@ -26,13 +35,8 @@ export default function Results() {
     return (
         <div>
             <h1>Results</h1>
-
-            {players[0] && <h2>Winner: {players[0].nickname}</h2>}
-
-            {players.map(p => (
-                <div key={p.id}>
-                    {p.nickname} - {p.score}
-                </div>
+            {players.map((p, i) => (
+                <h3 key={p.id}>{i + 1}. {p.nickname} - {p.score}</h3>
             ))}
         </div>
     );
