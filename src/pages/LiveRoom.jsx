@@ -7,13 +7,16 @@ export default function LiveRoom() {
     const [room, setRoom] = useState(null);
     const [players, setPlayers] = useState([]);
 
+    const nickname = localStorage.getItem("nickname");
+
     useEffect(() => {
         loadRoom();
         loadPlayers();
 
         const interval = setInterval(() => {
-            loadPlayers();
             loadRoom();
+            loadPlayers();
+            checkIfKicked();
         }, 2000);
 
         return () => clearInterval(interval);
@@ -38,25 +41,47 @@ export default function LiveRoom() {
         setPlayers(data || []);
     }
 
+    async function checkIfKicked() {
+        if (!nickname) return;
+
+        const { data } = await supabase
+            .from("players")
+            .select("*")
+            .eq("room_code", code)
+            .eq("nickname", nickname)
+            .single();
+
+        if (data?.status === "kicked") {
+            window.location.href = "/join";
+        }
+    }
+
     if (!room) {
         return <h2>Loading room...</h2>;
     }
 
     return (
         <div style={{ textAlign: "center" }}>
-            <h1>Room: {code}</h1>
+            <h1>Live Room</h1>
 
-            <h2>Status: {room.status}</h2>
+            <h2>Code: {code}</h2>
+
+            <h3>Status: {room.status}</h3>
 
             <h3>
-                Players ({players.length})
+                Players (
+                {
+                    players.filter(
+                        (p) => p.status !== "kicked"
+                    ).length
+                }
+                )
             </h3>
 
             <ul>
                 {players
                     .filter(
-                        (p) =>
-                            p.status !== "kicked"
+                        (p) => p.status !== "kicked"
                     )
                     .map((p) => (
                         <li key={p.id}>

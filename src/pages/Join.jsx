@@ -10,18 +10,20 @@ export default function Join() {
     async function joinRoom() {
         if (!code || !nickname) return;
 
-        const { data: room } = await supabase
+        const { data: room, error } = await supabase
             .from("rooms")
             .select("*")
             .eq("code", code)
             .single();
 
-        if (!room) {
+        if (error || !room) {
             alert("Room not found");
             return;
         }
 
-        const { error } = await supabase
+        localStorage.setItem("nickname", nickname);
+
+        const { error: insertError } = await supabase
             .from("players")
             .insert([
                 {
@@ -32,8 +34,8 @@ export default function Join() {
                 }
             ]);
 
-        if (error) {
-            console.log(error);
+        if (insertError) {
+            console.log(insertError);
             return;
         }
 
@@ -55,9 +57,7 @@ export default function Join() {
             <input
                 placeholder="Nickname"
                 value={nickname}
-                onChange={(e) =>
-                    setNickname(e.target.value)
-                }
+                onChange={(e) => setNickname(e.target.value)}
             />
 
             <br />
