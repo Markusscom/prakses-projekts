@@ -8,63 +8,36 @@ export default function Join() {
     const navigate = useNavigate();
 
     async function joinRoom() {
-        if (!code || !nickname) return;
-
-        const { data: room, error } = await supabase
+        const { data: room } = await supabase
             .from("rooms")
             .select("*")
             .eq("code", code)
             .single();
 
-        if (error || !room) {
-            alert("Room not found");
-            return;
-        }
+        if (!room) return alert("Room not found");
 
         localStorage.setItem("nickname", nickname);
 
-        const { error: insertError } = await supabase
-            .from("players")
-            .insert([
-                {
-                    room_code: code,
-                    nickname,
-                    score: 0,
-                    status: "active"
-                }
-            ]);
-
-        if (insertError) {
-            console.log(insertError);
-            return;
-        }
+        await supabase.from("players").insert([
+            {
+                room_code: code,
+                nickname,
+                score: 0,
+                status: "active"
+            }
+        ]);
 
         navigate(`/live/${code}`);
     }
 
     return (
-        <div style={{ textAlign: "center" }}>
-            <h1>Join Game</h1>
+        <div>
+            <h1>Join</h1>
 
-            <input
-                placeholder="Room code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-            />
+            <input placeholder="Code" value={code} onChange={e => setCode(e.target.value)} />
+            <input placeholder="Nickname" value={nickname} onChange={e => setNickname(e.target.value)} />
 
-            <br />
-
-            <input
-                placeholder="Nickname"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-            />
-
-            <br />
-
-            <button onClick={joinRoom}>
-                Join
-            </button>
+            <button onClick={joinRoom}>Join</button>
         </div>
     );
 }

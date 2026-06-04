@@ -10,40 +10,34 @@ export default function LiveRoom() {
     const nickname = localStorage.getItem("nickname");
 
     useEffect(() => {
-        loadRoom();
-        loadPlayers();
+        load();
 
         const interval = setInterval(() => {
-            loadRoom();
-            loadPlayers();
-            checkIfKicked();
+            load();
+            checkKick();
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [code]);
+    }, []);
 
-    async function loadRoom() {
-        const { data } = await supabase
+    async function load() {
+        const { data: r } = await supabase
             .from("rooms")
             .select("*")
             .eq("code", code)
             .single();
 
-        setRoom(data);
-    }
+        setRoom(r);
 
-    async function loadPlayers() {
-        const { data } = await supabase
+        const { data: p } = await supabase
             .from("players")
             .select("*")
             .eq("room_code", code);
 
-        setPlayers(data || []);
+        setPlayers(p || []);
     }
 
-    async function checkIfKicked() {
-        if (!nickname) return;
-
+    async function checkKick() {
         const { data } = await supabase
             .from("players")
             .select("*")
@@ -56,49 +50,29 @@ export default function LiveRoom() {
         }
     }
 
-    if (!room) {
-        return <h2>Loading room...</h2>;
-    }
+    if (!room) return <h2>Loading...</h2>;
 
     return (
-        <div style={{ textAlign: "center" }}>
-            <h1>Live Room</h1>
-
-            <h2>Code: {code}</h2>
+        <div>
+            <h1>Room {code}</h1>
 
             <h3>Status: {room.status}</h3>
 
-            <h3>
-                Players (
-                {
-                    players.filter(
-                        (p) => p.status !== "kicked"
-                    ).length
-                }
-                )
-            </h3>
-
-            <ul>
-                {players
-                    .filter(
-                        (p) => p.status !== "kicked"
-                    )
-                    .map((p) => (
-                        <li key={p.id}>
-                            {p.nickname}
-                        </li>
-                    ))}
-            </ul>
-
             {room.status === "waiting" && (
-                <h2>
-                    Waiting for teacher to start...
-                </h2>
+                <h2>Waiting for teacher...</h2>
             )}
 
             {room.status === "playing" && (
                 <h2>Game started!</h2>
             )}
+
+            <h3>Players</h3>
+
+            {players
+                .filter(p => p.status !== "kicked")
+                .map(p => (
+                    <div key={p.id}>{p.nickname}</div>
+                ))}
         </div>
     );
 }

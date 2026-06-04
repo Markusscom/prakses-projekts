@@ -17,9 +17,11 @@ export default function TeacherLive() {
     }
 
     async function createRoom() {
+        if (!selectedQuiz) return;
+
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from("rooms")
             .insert([
                 {
@@ -27,26 +29,36 @@ export default function TeacherLive() {
                     quiz_id: selectedQuiz,
                     status: "waiting",
                     current_question: 0,
-                    created_at: new Date()
+                    question_started_at: new Date(),
+                    question_duration: 10
                 }
             ])
             .select()
             .single();
 
-        if (error) return;
-
         setRoom(data);
-        startPlayerPolling(code);
+        startPolling(code);
     }
 
-    function startPlayerPolling(code) {
+    function startPolling(code) {
         fetchPlayers(code);
 
         const interval = setInterval(() => {
             fetchPlayers(code);
+            fetchRoom(code);
         }, 2000);
 
         return () => clearInterval(interval);
+    }
+
+    async function fetchRoom(code) {
+        const { data } = await supabase
+            .from("rooms")
+            .select("*")
+            .eq("code", code)
+            .single();
+
+        setRoom(data);
     }
 
     async function fetchPlayers(code) {
@@ -70,95 +82,111 @@ export default function TeacherLive() {
             .from("rooms")
             .update({
                 status: "playing",
-                current_question: 0
+                current_question: 0,
+                question_started_at: new Date()
             })
             .eq("code", room.code);
 
         setRoom({ ...room, status: "playing" });
     }
 
-    function isExpired(room) {
-        if (!room?.created_at) return true;
+    async function nextQuestion() {
+        await supabase
+            .from("rooms")
+            .update({
+                current_question: room.current_question + 1,
+                question_started_at: new Date()
+            })
+            .eq("code", room.code);
 
-        const created = new Date(room.created_at);
-        const now = new Date();
-
-        const diffHours =
-            (now - created) / (1000 * 60 * 60);
-
-        return (
-            room.status === null ||
-            (room.status === "waiting" &&
-                diffHours > 1)
-        );
+        setRoom({
+            ...room,
+            current_question: room.current_question + 1
+        });
     }
 
-    function getTimeLeft(createdAt) {
-        const created = new Date(createdAt);
+    function getTimeLeft(createdAt, duration = 10) {
+        if (!createdAt) return duration;
+
+        const start = new Date(createdAt);
         const now = new Date();
 
-        const diff = 60 * 60 * 1000 - (now - created);
+        const diff = Math.floor(
+            duration - (now - start) / 1000
+        );
 
-        if (diff <= 0) return "expired";
+        return diff > 0 ? diff : 0;
+    }
 
-        const minutes = Math.floor(diff / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
+    if (!room) {
+        return (
+            <div>
+                <h1>Teacher Live</h1>
 
-        return `${minutes}:${seconds}`;
+                <select
+                    value={selectedQuiz}
+                    onChange={(e) =>
+                        setSelectedQuiz(e.target.value)
+                    }
+                >
+                    <option value="">Select quiz</option>
+                    {quizzes.map((q) => (
+                        <option key={q.id} value={q.id}>
+                            {q.title}
+                        </option>
+                    ))}
+                </select>
+
+                <button onClick={createRoom}>
+                    Create Room
+                </button>
+            </div>
+        );
     }
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>Teacher Live</h1>
 
-            <select
-                value={selectedQuiz}
-                onChange={(e) => setSelectedQuiz(e.target.value)}
-            >
-                <option value="">Select quiz</option>
-                {quizzes.map((q) => (
-                    <option key={q.id} value={q.id}>
-                        {q.title}
-                    </option>
-                ))}
-            </select>
+            <h2>Room Code: {room.code}</h2>
+            <h3>Status: {room.status}</h3>
 
-            <br /><br />
+            <h4>
+                Time left:{" "}
+                {getTimeLeft(
+                    room.question_started_at,
+                    room.question_duration
+                )}
+            </h4>
 
-            <button onClick={createRoom}>Create Room</button>
+            <div>
+                <button onClick={startGame}>
+                    Start Game
+                </button>
 
-            {room && !isExpired(room) && (
-                <div style={{ marginTop: "20px" }}>
-                    <h2>Room Code: {room.code}</h2>
-                    <h3>Status: {room.status}</h3>
-                    <h4>Expires in: {getTimeLeft(room.created_at)}</h4>
+                <button onClick={nextQuestion}>
+                    Next Question
+                </button>
+            </div>
 
-                    <h3>
-                        Players (
-                        {players.filter(p => p.status !== "kicked").length}
-                        )
-                    </h3>
+            <h3>
+                Players (
+                {players.filter(p => p.status !== "kicked").length}
+                )
+            </h3>
 
-                    <ul>
-                        {players
-                            .filter(p => p.status !== "kicked")
-                            .map(p => (
-                                <li key={p.id}>
-                                    {p.nickname}
-                                    <button onClick={() => kickPlayer(p.id)}>
-                                        Kick
-                                    </button>
-                                </li>
-                            ))}
-                    </ul>
-
-                    {room.status === "waiting" && (
-                        <button onClick={startGame}>
-                            Start Game
-                        </button>
-                    )}
-                </div>
-            )}
+            <ul>
+                {players
+                    .filter(p => p.status !== "kicked")
+                    .map((p) => (
+                        <li key={p.id}>
+                            {p.nickname}
+                            <button onClick={() => kickPlayer(p.id)}>
+                                Kick
+                            </button>
+                        </li>
+                    ))}
+            </ul>
         </div>
     );
 }
