@@ -13,7 +13,7 @@ export default function PlayQuiz() {
     const nickname = localStorage.getItem("nickname");
 
     useEffect(() => {
-        load();
+        loadRoom();
 
         const interval = setInterval(() => {
             loadRoom();
@@ -22,40 +22,37 @@ export default function PlayQuiz() {
         return () => clearInterval(interval);
     }, []);
 
-    async function load() {
-        const { data: r } = await supabase
+    async function loadRoom() {
+        const { data: roomData } = await supabase
             .from("rooms")
             .select("*")
             .eq("code", id)
             .single();
 
-        setRoom(r);
+        setRoom(roomData);
 
-        const { data: q } = await supabase
+        const { data: quizData } = await supabase
             .from("quizzes")
             .select("*")
-            .eq("id", r.quiz_id)
+            .eq("id", roomData.quiz_id)
             .single();
 
-        setQuiz(q);
+        setQuiz(quizData);
+
+        if (
+            quizData &&
+            roomData.current_question >= quizData.questions.length
+        ) {
+            window.location.href = `/results/${id}`;
+        }
     }
 
-    async function loadRoom() {
-        const { data: r } = await supabase
-            .from("rooms")
-            .select("*")
-            .eq("code", id)
-            .single();
-
-        setRoom(r);
-    }
-
-    // TIMER CALCULATION
     useEffect(() => {
-        if (!room) return;
+        if (!room || !quiz) return;
 
         const interval = setInterval(() => {
             const duration = room.question_duration || 10;
+
             const start = new Date(room.question_started_at);
             const now = new Date();
 
@@ -66,31 +63,13 @@ export default function PlayQuiz() {
             setTimeLeft(diff > 0 ? diff : 0);
 
             if (diff <= 0) {
-                goNextQuestion();
+                setAnswered(false);
             }
         }, 1000);
 
         return () => clearInterval(interval);
     }, [room?.current_question]);
 
-    // AUTO NEXT QUESTION
-    async function goNextQuestion() {
-        if (!room) return;
-
-        await supabase
-            .from("rooms")
-            .update({
-                current_question:
-                    room.current_question + 1,
-                question_started_at: new Date(),
-                question_duration: 10
-            })
-            .eq("code", id);
-
-        setAnswered(false);
-    }
-
-    // SUBMIT ANSWER
     async function submitAnswer(i) {
         if (answered) return;
 
@@ -133,7 +112,10 @@ export default function PlayQuiz() {
     const question =
         quiz.questions[room.current_question];
 
-    if (!question) return <h2>Game finished</h2>;
+    if (!question) {
+        window.location.href = `/results/${id}`;
+        return null;
+    }
 
     return (
         <div style={{ textAlign: "center" }}>
@@ -141,15 +123,21 @@ export default function PlayQuiz() {
 
             <h2>Time left: {timeLeft}</h2>
 
-            {question.options.map((o, i) => (
-                <button
-                    key={i}
-                    disabled={answered}
-                    onClick={() => submitAnswer(i)}
-                >
-                    {o}
-                </button>
-            ))}
+            <div>
+                {question.options.map((o, i) => (
+                    <button
+                        key={i}
+                        disabled={answered || timeLeft <= 0}
+                        onClick={() => submitAnswer(i)}
+                    >
+                        {o}
+                    </button>
+                ))}
+            </div>
+
+            {timeLeft === 0 && (
+                <h3>Time is up!</h3>
+            )}
         </div>
     );
 }

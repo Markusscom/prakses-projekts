@@ -20,7 +20,7 @@ export default function App() {
                 <Route path="/join" element={<Join />} />
                 <Route path="/live/:code" element={<LiveRoom />} />
                 <Route path="/play/:id" element={<PlayQuiz />} />
-                <Route path="/results" element={<Results />} />
+                <Route path="/results/:code" element={<Results />} />
 
             </Routes>
     );
