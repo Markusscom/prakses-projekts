@@ -4,20 +4,19 @@ import { supabase } from "../lib/supabase";
 export default function TeacherLive() {
     const [quizzes, setQuizzes] = useState([]);
     const [selectedQuiz, setSelectedQuiz] = useState("");
-    const [roomCode, setRoomCode] = useState("");
+    const [room, setRoom] = useState(null);
+    const [players, setPlayers] = useState([]);
 
     useEffect(() => {
         loadQuizzes();
     }, []);
 
     async function loadQuizzes() {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from("quizzes")
             .select("*");
 
-        if (!error) {
-            setQuizzes(data);
-        }
+        setQuizzes(data || []);
     }
 
     async function createRoom() {
@@ -30,22 +29,71 @@ export default function TeacherLive() {
             100000 + Math.random() * 900000
         ).toString();
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from("rooms")
             .insert([
                 {
-                    code: code,
-                    quiz_id: selectedQuiz
+                    code,
+                    quiz_id: selectedQuiz,
+                    status: "waiting",
+                    current_question: 0
                 }
-            ]);
+            ])
+            .select()
+            .single();
 
         if (error) {
             console.log(error);
-            alert("Failed to create room");
             return;
         }
 
-        setRoomCode(code);
+        setRoom(data);
+        startPlayerPolling(code);
+    }
+
+    function startPlayerPolling(code) {
+        fetchPlayers(code);
+
+        const interval = setInterval(() => {
+            fetchPlayers(code);
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }
+
+    async function fetchPlayers(code) {
+        const { data } = await supabase
+            .from("players")
+            .select("*")
+            .eq("room_code", code);
+
+        setPlayers(data || []);
+    }
+
+    async function kickPlayer(playerId) {
+        await supabase
+            .from("players")
+            .update({ status: "kicked" })
+            .eq("id", playerId);
+    }
+
+    async function startGame() {
+        if (!room) return;
+
+        const { error } = await supabase
+            .from("rooms")
+            .update({
+                status: "playing",
+                current_question: 0
+            })
+            .eq("code", room.code);
+
+        if (!error) {
+            setRoom({
+                ...room,
+                status: "playing"
+            });
+        }
     }
 
     return (
@@ -59,15 +107,12 @@ export default function TeacherLive() {
                 }
             >
                 <option value="">
-                    Select Quiz
+                    Select quiz
                 </option>
 
-                {quizzes.map((quiz) => (
-                    <option
-                        key={quiz.id}
-                        value={quiz.id}
-                    >
-                        {quiz.title}
+                {quizzes.map((q) => (
+                    <option key={q.id} value={q.id}>
+                        {q.title}
                     </option>
                 ))}
             </select>
@@ -79,10 +124,50 @@ export default function TeacherLive() {
                 Create Room
             </button>
 
-            {roomCode && (
-                <div>
-                    <h2>Room Code</h2>
-                    <h1>{roomCode}</h1>
+            {room && (
+                <div style={{ marginTop: "20px" }}>
+                    <h2>Room Code: {room.code}</h2>
+                    <h3>Status: {room.status}</h3>
+
+                    {/* PLAYERS */}
+                    <h3>
+                        Players (
+                        {
+                            players.filter(
+                                (p) =>
+                                    p.status !== "kicked"
+                            ).length
+                        }
+                        )
+                    </h3>
+
+                    <ul>
+                        {players
+                            .filter(
+                                (p) =>
+                                    p.status !== "kicked"
+                            )
+                            .map((p) => (
+                                <li key={p.id}>
+                                    {p.nickname}{" "}
+
+                                    <button
+                                        onClick={() =>
+                                            kickPlayer(p.id)
+                                        }
+                                    >
+                                        Kick
+                                    </button>
+                                </li>
+                            ))}
+                    </ul>
+
+                    {room.status ===
+                        "waiting" && (
+                        <button onClick={startGame}>
+                            Start Game
+                        </button>
+                    )}
                 </div>
             )}
         </div>
