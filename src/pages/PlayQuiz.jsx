@@ -13,64 +13,43 @@ export default function PlayQuiz() {
     const nickname = localStorage.getItem("nickname");
 
     useEffect(() => {
-        loadRoom();
+        load();
 
-        const interval = setInterval(() => {
-            loadRoom();
-        }, 1000);
+        const channel = supabase
+            .channel("player-room")
+            .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: `code=eq.${id}` }, (p) => {
+                setRoom(p.new);
+                setAnswered(false);
+            })
+            .subscribe();
 
-        return () => clearInterval(interval);
+        return () => supabase.removeChannel(channel);
     }, []);
 
-    async function loadRoom() {
-        const { data: roomData } = await supabase
-            .from("rooms")
-            .select("*")
-            .eq("code", id)
-            .single();
-
-        setRoom(roomData);
-
-        const { data: quizData } = await supabase
-            .from("quizzes")
-            .select("*")
-            .eq("id", roomData.quiz_id)
-            .single();
-
-        setQuiz(quizData);
-
-        if (
-            quizData &&
-            roomData.current_question >= quizData.questions.length
-        ) {
-            window.location.href = `/results/${id}`;
-        }
-    }
-
     useEffect(() => {
-        if (!room || !quiz) return;
+        if (!room) return;
 
-        const interval = setInterval(() => {
-            const duration = room.question_duration || 10;
-
+        const t = setInterval(() => {
             const start = new Date(room.question_started_at);
             const now = new Date();
+            const diff = Math.max(0, 10 - Math.floor((now - start) / 1000));
+            setTimeLeft(diff);
 
-            const diff = Math.floor(
-                duration - (now - start) / 1000
-            );
+            if (diff === 0) setAnswered(false);
+        }, 500);
 
-            setTimeLeft(diff > 0 ? diff : 0);
-
-            if (diff <= 0) {
-                setAnswered(false);
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
+        return () => clearInterval(t);
     }, [room?.current_question]);
 
-    async function submitAnswer(i) {
+    async function load() {
+        const { data: r } = await supabase.from("rooms").select("*").eq("code", id).single();
+        setRoom(r);
+
+        const { data: q } = await supabase.from("quizzes").select("*").eq("id", r.quiz_id).single();
+        setQuiz(q);
+    }
+
+    async function answer(i) {
         if (answered) return;
 
         const { data: player } = await supabase
@@ -80,28 +59,19 @@ export default function PlayQuiz() {
             .eq("nickname", nickname)
             .single();
 
-        const question =
-            quiz.questions[room.current_question];
-
+        const question = quiz.questions[room.current_question];
         const correct = i === question.correct;
 
-        await supabase.from("answers").insert([
-            {
-                room_code: id,
-                player_id: player.id,
-                question_index: room.current_question,
-                selected_index: i,
-                is_correct: correct
-            }
-        ]);
+        await supabase.from("answers").insert({
+            room_code: id,
+            player_id: player.id,
+            question_index: room.current_question,
+            selected_index: i,
+            is_correct: correct
+        });
 
         if (correct) {
-            await supabase
-                .from("players")
-                .update({
-                    score: player.score + 1
-                })
-                .eq("id", player.id);
+            await supabase.from("players").update({ score: player.score + 1 }).eq("id", player.id);
         }
 
         setAnswered(true);
@@ -109,35 +79,25 @@ export default function PlayQuiz() {
 
     if (!room || !quiz) return <h2>Loading...</h2>;
 
-    const question =
-        quiz.questions[room.current_question];
+    if (room.status === "waiting") return <h2>Waiting for teacher...</h2>;
 
-    if (!question) {
+    if (room.current_question >= quiz.questions.length) {
         window.location.href = `/results/${id}`;
         return null;
     }
 
+    const q = quiz.questions[room.current_question];
+
     return (
-        <div style={{ textAlign: "center" }}>
-            <h1>{question.question}</h1>
+        <div>
+            <h1>{q.question}</h1>
+            <h2>{timeLeft}</h2>
 
-            <h2>Time left: {timeLeft}</h2>
-
-            <div>
-                {question.options.map((o, i) => (
-                    <button
-                        key={i}
-                        disabled={answered || timeLeft <= 0}
-                        onClick={() => submitAnswer(i)}
-                    >
-                        {o}
-                    </button>
-                ))}
-            </div>
-
-            {timeLeft === 0 && (
-                <h3>Time is up!</h3>
-            )}
+            {q.options.map((o, i) => (
+                <button key={i} disabled={answered} onClick={() => answer(i)}>
+                    {o}
+                </button>
+            ))}
         </div>
     );
 }
