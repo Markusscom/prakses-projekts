@@ -11,7 +11,7 @@ export default function Dashboard() {
                 Create Quiz
             </button>
 
-            <button onClick={() => navigate("/live")}>
+            <button onClick={() => navigate("/teacher-live")}>
                 Start Live Game
             </button>
         </div>
