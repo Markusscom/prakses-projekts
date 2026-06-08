@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
+
+const supabase = getSupabase();
 import { subscribeRoom } from "../realtime/roomChannel";
 
 export default function PlayQuiz() {

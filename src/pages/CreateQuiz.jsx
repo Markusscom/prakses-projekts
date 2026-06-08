@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
+
+const supabase = getSupabase();
 
 export default function CreateQuiz() {
     const [title, setTitle] = useState("");
@@ -45,13 +47,11 @@ export default function CreateQuiz() {
         ]);
     }
 
-    // remove question
     function removeQuestion(index) {
         const copy = questions.filter((_, i) => i !== index);
         setQuestions(copy);
     }
 
-    // SAVE TO SUPABASE
     async function saveQuiz() {
         if (!title) {
             alert("Ievadi nosaukumu!");
@@ -97,7 +97,6 @@ export default function CreateQuiz() {
 
             <hr />
 
-            {/* QUESTIONS */}
             {questions.map((q, qIndex) => (
                 <div key={qIndex} style={{ marginBottom: "20px" }}>
                     <h3>Question {qIndex + 1}</h3>

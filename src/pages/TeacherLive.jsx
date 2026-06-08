@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
+
+const supabase = getSupabase();
 import { subscribeRoom } from "../realtime/roomChannel";
 
 export default function TeacherLive() {
