@@ -1,4 +1,6 @@
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
+
+const supabase = getSupabase();
 
 export function subscribeRoom(code, onRoom, onPlayers) {
   const channel = supabase
