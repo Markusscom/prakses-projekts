@@ -1,27 +1,67 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Login from "./pages/Login";
 import Start from "./pages/Start";
 import Dashboard from "./pages/Dashboard";
 import Join from "./pages/Join";
 import LiveRoom from "./pages/LiveRoom";
-import TeacherLive from "./pages/TeacherLive";
-import CreateQuiz from "./pages/CreateQuiz";
 import PlayQuiz from "./pages/PlayQuiz";
-import Results from "./pages/Results";
+
+import AuthGuard from "./auth/AuthGuard";
 
 export default function App() {
-    return (
-            <Routes>
+  return (
+    <BrowserRouter>
+      <Routes>
 
-                <Route path="/" element={<Start />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/create" element={<CreateQuiz />} />
-                <Route path="/teacher-live" element={<TeacherLive />} />
-                <Route path="/join" element={<Join />} />
-                <Route path="/live/:code" element={<LiveRoom />} />
-                <Route path="/play/:code" element={<PlayQuiz />} />
-                <Route path="/results/:code" element={<Results />} />
+        <Route path="/login" element={<Login />} />
 
-            </Routes>
-    );
+        <Route
+          path="/"
+          element={
+            <AuthGuard>
+              <Start />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <Dashboard />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/join"
+          element={
+            <AuthGuard>
+              <Join />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/live/:code"
+          element={
+            <AuthGuard>
+              <LiveRoom />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/play/:code"
+          element={
+            <AuthGuard>
+              <PlayQuiz />
+            </AuthGuard>
+          }
+        />
+
+      </Routes>
+    </BrowserRouter>
+  );
 }

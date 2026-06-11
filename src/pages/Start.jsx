@@ -4,23 +4,35 @@ import { supabase } from "../lib/supabase";
 export default function Start() {
   const navigate = useNavigate();
 
-  async function goTeacher() {
-    const { data: user } = await supabase.auth.getUser();
+    async function goTeacher() {
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data?.user) {
+        navigate("/login");
+        return;
+    }
+
+    const user = data.user;
 
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.user.id)
-      .single();
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-    if (profile?.role !== "teacher") {
-      alert("No permission");
-      return;
+    if (!profile) {
+        alert("Profile not found");
+        return;
+    }
+
+    if (profile.role !== "teacher") {
+        alert("No permission");
+        return;
     }
 
     navigate("/dashboard");
-  }
-
+    }
+    
   return (
     <div>
       <button onClick={() => navigate("/join")}>
