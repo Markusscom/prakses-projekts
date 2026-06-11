@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getSupabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { subscribeRoom } from "../realtime/roomChannel";
 
 const supabase = getSupabase();

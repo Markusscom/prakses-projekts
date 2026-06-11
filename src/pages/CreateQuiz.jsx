@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getSupabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 const supabase = getSupabase();
 
