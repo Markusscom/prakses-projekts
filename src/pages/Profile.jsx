@@ -21,6 +21,11 @@ export default function Profile() {
     }
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate("/login");
+  }
+
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h1>Iestati savu profilu</h1>
@@ -30,7 +35,10 @@ export default function Profile() {
         <option value="teacher">Skolotājs</option>
       </select>
       <br />
-      <Button onClick={saveProfile}>Saglabāt</Button>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+        <Button onClick={saveProfile}>Saglabāt</Button>
+        <Button variant="danger" onClick={handleLogout}>Izrakstīties</Button>
+      </div>
     </div>
   );
 }
