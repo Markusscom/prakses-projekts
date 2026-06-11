@@ -37,33 +37,35 @@ export default function TeacherLive() {
     setPlayers(data || []);
   }
 
-  async function createRoom() {
+  async function createRoom(quizId) {
     const code = String(Math.floor(100000 + Math.random() * 900000));
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("rooms")
       .insert({
         code,
-        quiz_id: selectedQuiz,
+        quiz_id: quizId,
         status: "waiting",
         current_question: 0,
-        question_started_at: new Date().toISOString()
+        question_started_at: null,
+        question_duration: 10
       })
       .select()
       .single();
 
-    setRoom(data);
+    return data;
   }
 
-  async function startGame() {
+  async function startGame(code) {
     await supabase
       .from("rooms")
       .update({
         status: "playing",
         current_question: 0,
-        question_started_at: new Date().toISOString()
+        question_started_at: new Date().toISOString(),
+        question_duration: 10
       })
-      .eq("code", room.code);
+      .eq("code", code);
   }
 
   async function nextQuestion() {
