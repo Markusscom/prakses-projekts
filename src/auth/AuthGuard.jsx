@@ -8,31 +8,24 @@ export default function AuthGuard({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let active = true;
-
-    async function check() {
-      const { data } = await supabase.auth.getUser();
-
-      if (!active) return;
-
+    // Pārbauda sākotnējo sesiju
+    supabase.auth.getUser().then(({ data }) => {
       setUser(data?.user ?? null);
       setLoading(false);
-    }
+    });
 
-    check();
+    // Klausās izmaiņas autentifikācijas statusā
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (!session) {
+        navigate("/login", { replace: true });
+      }
+    });
 
     return () => {
-      active = false;
+      subscription.unsubscribe();
     };
-  }, []);
-
-  useEffect(() => {
-    if (loading) return;
-
-    if (!user) {
-      navigate("/login", { replace: true });
-    }
-  }, [loading, user, navigate]);
+  }, [navigate]);
 
   if (loading) return <h2>Loading...</h2>;
 
