@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 
 export default function CreateQuiz() {
@@ -86,12 +88,10 @@ export default function CreateQuiz() {
         <div style={{ padding: "20px" }}>
             <h1>Create Quiz</h1>
 
-            {/* TITLE */}
-            <input
+            <Input
                 placeholder="Quiz title"
                 value={title}
                 onChange={handleTitle}
-                style={{ padding: "10px", width: "300px" }}
             />
 
             <hr />
@@ -100,7 +100,7 @@ export default function CreateQuiz() {
                 <div key={qIndex} style={{ marginBottom: "20px" }}>
                     <h3>Question {qIndex + 1}</h3>
 
-                    <input
+                    <Input
                         placeholder="Question"
                         value={q.question}
                         onChange={(e) =>
@@ -110,7 +110,7 @@ export default function CreateQuiz() {
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginTop: "10px" }}>
                         {q.answers.map((ans, aIndex) => (
-                            <input
+                            <Input
                                 key={aIndex}
                                 placeholder={`Answer ${aIndex + 1}`}
                                 value={ans}
@@ -138,23 +138,23 @@ export default function CreateQuiz() {
                         </select>
                     </div>
 
-                    <button onClick={() => removeQuestion(qIndex)}>
+                    <Button variant="danger" onClick={() => removeQuestion(qIndex)} style={{marginTop: "10px"}}>
                         Delete question
-                    </button>
+                    </Button>
 
                     <hr />
                 </div>
             ))}
 
-            <button onClick={addQuestion}>
+            <Button onClick={addQuestion}>
                 + Add Question
-            </button>
+            </Button>
 
             <br /><br />
 
-            <button onClick={saveQuiz}>
+            <Button onClick={saveQuiz}>
                 Save Quiz
-            </button>
+            </Button>
         </div>
     );
 }
