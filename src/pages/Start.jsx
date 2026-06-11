@@ -18,7 +18,7 @@ export default function Start() {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
     if (!profile) {
         alert("Profile not found");
