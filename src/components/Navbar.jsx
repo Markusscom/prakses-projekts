@@ -33,6 +33,7 @@ export default function Navbar() {
                     </>
                 )}
                 <Link to="/join">Join Quiz</Link>
+                <Link to="/profile">Profile</Link>
             </div>
         </nav>
     );
