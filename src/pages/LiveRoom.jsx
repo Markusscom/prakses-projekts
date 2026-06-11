@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getSupabase } from "../lib/supabase";
+import { subscribeRoom } from "../realtime/roomChannel";
 
 const supabase = getSupabase();
-import { subscribeRoom } from "../realtime/roomChannel";
 
 export default function LiveRoom() {
   const { code } = useParams();
+  const navigate = useNavigate();
+
   const [room, setRoom] = useState(null);
   const [players, setPlayers] = useState([]);
 
@@ -17,12 +19,39 @@ export default function LiveRoom() {
 
     const channel = subscribeRoom(
       code,
-      setRoom,
-      loadPlayers
+      (updatedRoom) => {
+        setRoom(updatedRoom);
+      },
+      () => {
+        loadPlayers();
+      }
     );
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [code]);
+
+  useEffect(() => {
+    if (!room) return;
+
+    if (room.status === "playing") {
+      navigate(`/play/${code}`);
+    }
+  }, [room, code, navigate]);
+
+  useEffect(() => {
+    if (!nickname) return;
+
+    const me = players.find(
+      (p) => p.nickname === nickname
+    );
+
+    if (me?.status === "kicked") {
+      localStorage.removeItem("roomCode");
+      navigate("/join");
+    }
+  }, [players, nickname, navigate]);
 
   async function load() {
     const { data } = await supabase
@@ -31,8 +60,13 @@ export default function LiveRoom() {
       .eq("code", code)
       .single();
 
+    if (!data) {
+      navigate("/join");
+      return;
+    }
+
     setRoom(data);
-    loadPlayers();
+    await loadPlayers();
   }
 
   async function loadPlayers() {
@@ -44,29 +78,28 @@ export default function LiveRoom() {
     setPlayers(data || []);
   }
 
-  useEffect(() => {
-    if (!room) return;
-    if (players.find(p => p.nickname === nickname && p.status === "kicked")) {
-      window.location.href = "/join";
-    }
-  }, [players]);
-
-  if (!room) return <h2>Loading...</h2>;
+  if (!room) {
+    return <h2>Loading...</h2>;
+  }
 
   return (
     <div>
-      <h1>{code}</h1>
-      <h2>{room.status}</h2>
+      <h1>Room {code}</h1>
 
-      {room.status === "waiting" && <h3>Waiting...</h3>}
-      {room.status === "playing" && <h3>Game started</h3>}
+      <h2>Status: {room.status}</h2>
 
-      <h3>Players</h3>
+      {room.status === "waiting" && (
+        <h3>Waiting for teacher to start...</h3>
+      )}
+
+      <h3>Players ({players.filter(p => p.status !== "kicked").length})</h3>
 
       {players
-        .filter(p => p.status !== "kicked")
-        .map(p => (
-          <div key={p.id}>{p.nickname}</div>
+        .filter((p) => p.status !== "kicked")
+        .map((player) => (
+          <div key={player.id}>
+            {player.nickname}
+          </div>
         ))}
     </div>
   );
