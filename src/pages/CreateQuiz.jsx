@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const supabase = getSupabase();
 
 export default function CreateQuiz() {
     const [title, setTitle] = useState("");

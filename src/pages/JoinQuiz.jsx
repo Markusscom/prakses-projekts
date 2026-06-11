@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-const supabase = getSupabase();
 import { useNavigate } from "react-router-dom";
 
 export default function JoinQuiz() {
