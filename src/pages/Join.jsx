@@ -9,27 +9,17 @@ export default function Join() {
     const [nickname, setNickname] = useState("");
     const navigate = useNavigate();
 
-    async function joinRoom() {
-        const { data: room } = await supabase
-            .from("rooms")
-            .select("*")
-            .eq("code", code)
-            .single();
+    export default function joinRoom(code) {
+    return async function () {
+        const { data: user } = await supabase.auth.getUser();
 
-        if (!room) return alert("Room not found");
-
-        localStorage.setItem("nickname", nickname);
-
-        await supabase.from("players").insert([
-            {
-                room_code: code,
-                nickname,
-                score: 0,
-                status: "active"
-            }
-        ]);
-
-        navigate(`/live/${code}`);
+        await supabase.from("players").insert({
+        room_code: code,
+        user_id: user.user.id,
+        score: 0,
+        status: "active"
+        });
+    };
     }
 
     return (

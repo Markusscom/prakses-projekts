@@ -1,34 +1,46 @@
 import { useEffect, useState } from "react";
-import { getSupabase } from "../lib/supabase";
-
-const supabase = getSupabase();
-import { subscribeRoom } from "../realtime/roomChannel";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 export default function TeacherLive() {
-  const [quizzes, setQuizzes] = useState([]);
-  const [selectedQuiz, setSelectedQuiz] = useState("");
+  const { code } = useParams();
+  const navigate = useNavigate();
+
   const [room, setRoom] = useState(null);
   const [players, setPlayers] = useState([]);
+  const [quiz, setQuiz] = useState(null);
 
   useEffect(() => {
-    supabase.from("quizzes").select("id,title").then(({ data }) => {
-      setQuizzes(data || []);
-    });
-  }, []);
+    load();
 
-  useEffect(() => {
-    if (!room?.code) return;
+    const interval = setInterval(() => {
+      loadPlayers();
+    }, 2000);
 
-    const channel = subscribeRoom(
-      room.code,
-      setRoom,
-      () => loadPlayers(room.code)
-    );
+    return () => clearInterval(interval);
+  }, [code]);
 
-    return () => supabase.removeChannel(channel);
-  }, [room?.code]);
+  async function load() {
+    const { data: roomData } = await supabase
+      .from("rooms")
+      .select("*")
+      .eq("code", code)
+      .single();
 
-  async function loadPlayers(code) {
+    setRoom(roomData);
+
+    const { data: quizData } = await supabase
+      .from("quizzes")
+      .select("*")
+      .eq("id", roomData.quiz_id)
+      .single();
+
+    setQuiz(quizData);
+
+    loadPlayers();
+  }
+
+  async function loadPlayers() {
     const { data } = await supabase
       .from("players")
       .select("*")
@@ -37,26 +49,7 @@ export default function TeacherLive() {
     setPlayers(data || []);
   }
 
-  async function createRoom(quizId) {
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-
-    const { data, error } = await supabase
-      .from("rooms")
-      .insert({
-        code,
-        quiz_id: quizId,
-        status: "waiting",
-        current_question: 0,
-        question_started_at: null,
-        question_duration: 10
-      })
-      .select()
-      .single();
-
-    return data;
-  }
-
-  async function startGame(code) {
+  async function startGame() {
     await supabase
       .from("rooms")
       .update({
@@ -69,53 +62,65 @@ export default function TeacherLive() {
   }
 
   async function nextQuestion() {
+    const next = room.current_question + 1;
+
+    if (!quiz || next >= quiz.questions.length) {
+      await supabase
+        .from("rooms")
+        .update({ status: "finished" })
+        .eq("code", code);
+
+      navigate(`/results/${code}`);
+      return;
+    }
+
     await supabase
       .from("rooms")
       .update({
-        current_question: room.current_question + 1,
+        current_question: next,
         question_started_at: new Date().toISOString()
       })
-      .eq("code", room.code);
+      .eq("code", code);
   }
 
-  async function kick(id) {
+  async function kickPlayer(userId) {
     await supabase
       .from("players")
       .update({ status: "kicked" })
-      .eq("id", id);
+      .eq("user_id", userId);
   }
 
-  if (!room) {
-    return (
-      <div>
-        <select onChange={(e) => setSelectedQuiz(e.target.value)}>
-          <option value="">Select quiz</option>
-          {quizzes.map(q => (
-            <option key={q.id} value={q.id}>{q.title}</option>
-          ))}
-        </select>
-
-        <button onClick={createRoom}>Create</button>
-      </div>
-    );
-  }
+  if (!room) return <h2>Loading...</h2>;
 
   return (
     <div>
-      <h1>ROOM {room.code}</h1>
-      <h2>{room.status}</h2>
+      <h1>Teacher Room: {code}</h1>
 
-      <button onClick={startGame}>Start</button>
-      <button onClick={nextQuestion}>Next</button>
+      <h3>Status: {room.status}</h3>
 
       <h3>Players ({players.length})</h3>
 
-      {players.map(p => (
+      {players.map((p) => (
         <div key={p.id}>
-          {p.nickname}
-          <button onClick={() => kick(p.id)}>kick</button>
+          {p.user_id} | score: {p.score}
+
+          <button onClick={() => kickPlayer(p.user_id)}>
+            Kick
+          </button>
         </div>
       ))}
+
+      {room.status === "waiting" && (
+        <button onClick={startGame}>
+          Start Game
+        </button>
+      )}
+
+      {room.status === "playing" && (
+        <button onClick={nextQuestion}>
+          Next Question
+        </button>
+      )}
     </div>
   );
 }

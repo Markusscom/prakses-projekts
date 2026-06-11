@@ -1,30 +1,35 @@
 import { useNavigate } from "react-router-dom";
-import { setRole } from "../utils/role";
+import { supabase } from "../lib/supabase";
 
 export default function Start() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    function chooseTeacher() {
-        setRole("teacher");
-        navigate("/dashboard");
+  async function goTeacher() {
+    const { data: user } = await supabase.auth.getUser();
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.user.id)
+      .single();
+
+    if (profile?.role !== "teacher") {
+      alert("No permission");
+      return;
     }
 
-    function chooseStudent() {
-        setRole("student");
-        navigate("/join");
-    }
+    navigate("/dashboard");
+  }
 
-    return (
-        <div style={{ textAlign: "center", marginTop: "100px" }}>
-            <h1>Choose Role</h1>
+  return (
+    <div>
+      <button onClick={() => navigate("/join")}>
+        Join Game
+      </button>
 
-            <button onClick={chooseTeacher}>
-                I am Teacher
-            </button>
-
-            <button onClick={chooseStudent}>
-                I am Student
-            </button>
-        </div>
-    );
+      <button onClick={goTeacher}>
+        Teacher Dashboard
+      </button>
+    </div>
+  );
 }
