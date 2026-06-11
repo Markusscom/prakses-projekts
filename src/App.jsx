@@ -7,6 +7,7 @@ import CreateQuiz from "./pages/CreateQuiz";
 import Join from "./pages/Join";
 import LiveRoom from "./pages/LiveRoom";
 import PlayQuiz from "./pages/PlayQuiz";
+import Profile from "./pages/Profile";
 
 import AuthGuard from "./auth/AuthGuard";
 import TeacherLive from "./pages/TeacherLive";
@@ -14,7 +15,7 @@ import Navbar from "./components/Navbar";
 
 function Layout({ children }) {
   const location = useLocation();
-  const showNavbar = location.pathname !== "/login";
+  const showNavbar = location.pathname !== "/login" && location.pathname !== "/profile";
 
   return (
     <>
@@ -40,6 +41,16 @@ export default function App() {
             }
           />
 
+          <Route
+            path="/profile"
+            element={
+              <AuthGuard>
+                <Profile />
+              </AuthGuard>
+            }
+          />
+          
+          {/* ... pārējie maršruti */}
           <Route
             path="/teacher-live"
             element={

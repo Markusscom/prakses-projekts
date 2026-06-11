@@ -1,18 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import Button from "../components/ui/Button";
 
 export default function Start() {
   const navigate = useNavigate();
 
-    async function goTeacher() {
-    const { data, error } = await supabase.auth.getUser();
-
-    if (error || !data?.user) {
-        navigate("/login");
-        return;
-    }
-
-    const user = data.user;
+  async function goTeacher() {
+    const { data: { user } } = await supabase.auth.getUser();
 
     const { data: profile } = await supabase
         .from("profiles")
@@ -21,27 +15,30 @@ export default function Start() {
         .maybeSingle();
 
     if (!profile) {
-        alert("Profile not found");
+        navigate("/profile");
         return;
     }
 
     if (profile.role !== "teacher") {
-        alert("No permission");
+        alert("Nav atļaujas");
         return;
     }
 
     navigate("/dashboard");
-    }
+  }
     
   return (
-    <div>
-      <button onClick={() => navigate("/join")}>
-        Join Game
-      </button>
+    <div style={{ textAlign: "center", padding: "20px" }}>
+      <h1>Sveicināts Quiz platformā!</h1>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "20px" }}>
+        <Button onClick={() => navigate("/join")}>
+            Join Game
+        </Button>
 
-      <button onClick={goTeacher}>
-        Teacher Dashboard
-      </button>
+        <Button onClick={goTeacher}>
+            Teacher Dashboard
+        </Button>
+      </div>
     </div>
   );
 }
