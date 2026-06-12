@@ -19,10 +19,10 @@ function Layout({ children }) {
   const showNavbar = location.pathname !== "/login" && location.pathname !== "/profile";
 
   return (
-    <>
+    <div className="app-container">
       {showNavbar && <Navbar />}
-      <main style={{ padding: "20px" }}>{children}</main>
-    </>
+      <main className="content-container">{children}</main>
+    </div>
   );
 }
 
