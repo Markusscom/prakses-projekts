@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 
 import Auth from "./pages/Auth";
 import Start from "./pages/Start";
@@ -27,85 +28,86 @@ function Layout({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/login" element={<Auth />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/login" element={<Auth />} />
 
-          <Route
-            path="/"
-            element={
-              <AuthGuard>
-                <Start />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/"
+              element={
+                <AuthGuard>
+                  <Start />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/profile"
-            element={
-              <AuthGuard>
-                <Profile />
-              </AuthGuard>
-            }
-          />
-          
-          {/* ... pārējie maršruti */}
-          <Route
-            path="/teacher-live"
-            element={
-              <AuthGuard>
-                <TeacherLive />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/profile"
+              element={
+                <AuthGuard>
+                  <Profile />
+                </AuthGuard>
+              }
+            />
+            
+            <Route
+              path="/teacher-live"
+              element={
+                <AuthGuard>
+                  <TeacherLive />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/dashboard"
-            element={
-              <AuthGuard>
-                <Dashboard />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/dashboard"
+              element={
+                <AuthGuard>
+                  <Dashboard />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/create"
-            element={
-              <AuthGuard>
-                <CreateQuiz />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/create"
+              element={
+                <AuthGuard>
+                  <CreateQuiz />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/join"
-            element={
-              <AuthGuard>
-                <Join />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/join"
+              element={
+                <AuthGuard>
+                  <Join />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/live/:code"
-            element={
-              <AuthGuard>
-                <LiveRoom />
-              </AuthGuard>
-            }
-          />
+            <Route
+              path="/live/:code"
+              element={
+                <AuthGuard>
+                  <LiveRoom />
+                </AuthGuard>
+              }
+            />
 
-          <Route
-            path="/play/:code"
-            element={
-              <AuthGuard>
-                <PlayQuiz />
-              </AuthGuard>
-            }
-          />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+            <Route
+              path="/play/:code"
+              element={
+                <AuthGuard>
+                  <PlayQuiz />
+                </AuthGuard>
+              }
+            />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
