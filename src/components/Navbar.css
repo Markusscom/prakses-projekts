@@ -7,25 +7,32 @@
 
     background-color: var(--text-color);
     color: var(--white);
+
+    /* Depth for a professional look */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
 }
 
 .links {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
 }
 
 .links a {
     color: var(--white);
     text-decoration: none;
     font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: color 0.2s;
 }
 
 .links a:hover {
-    text-decoration: underline;
-    color: var(--primary-color);
+    color: var(--accent-yellow);
 }
