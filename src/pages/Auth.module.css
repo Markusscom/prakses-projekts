@@ -1,0 +1,27 @@
+.authContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  max-width: 400px;
+  margin: auto;
+  margin-top: 50px;
+  background-color: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.title {
+  font-family: var(--font-family);
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.switchMode {
+  cursor: pointer;
+  color: var(--accent-blue);
+  font-family: var(--font-family);
+  margin: 0;
+}

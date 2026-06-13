@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import styles from "./Auth.module.css";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -39,31 +42,31 @@ export default function Auth() {
   }
 
   return (
-    <div>
-      <h1>{mode === "login" ? "Login" : "Sign Up"}</h1>
+    <div className={styles.authContainer}>
+      <h1 className={styles.title}>{mode === "login" ? "Login" : "Sign Up"}</h1>
 
-      <input
+      <Input
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <input
+      <Input
         placeholder="Password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button onClick={handleAuth}>
+      <Button onClick={handleAuth}>
         {mode === "login" ? "Login" : "Create account"}
-      </button>
+      </Button>
 
       <p
+        className={styles.switchMode}
         onClick={() =>
           setMode(mode === "login" ? "signup" : "login")
         }
-        style={{ cursor: "pointer" }}
       >
         Switch to {mode === "login" ? "Sign Up" : "Login"}
       </p>
