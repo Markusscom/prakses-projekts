@@ -13,20 +13,20 @@
   transform: scale(0.98);
 }
 
-.btn-primary {
+.btnPrimary {
   background-color: var(--primary-color);
   color: var(--white);
 }
 
-.btn-primary:hover {
+.btnPrimary:hover {
   background-color: var(--primary-hover);
 }
 
-.btn-danger {
+.btnDanger {
   background-color: var(--accent-red);
   color: var(--white);
 }
 
-.btn-danger:hover {
+.btnDanger:hover {
   background-color: #c71734;
 }
