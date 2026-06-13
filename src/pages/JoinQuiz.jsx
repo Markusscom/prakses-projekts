@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-
 import { useNavigate } from "react-router-dom";
+import Button from "../components/ui/Button";
+import styles from "./JoinQuiz.module.css";
 
 export default function JoinQuiz() {
     const [quizzes, setQuizzes] = useState([]);
@@ -16,9 +17,6 @@ export default function JoinQuiz() {
             .from("quizzes")
             .select("*");
 
-        console.log("DATA:", data);
-        console.log("ERROR:", error);
-
         if (!error) {
             setQuizzes(data);
         }
@@ -29,19 +27,21 @@ export default function JoinQuiz() {
     }
 
     return (
-        <div style={{ padding: "20px" }}>
-            <h1>Join Quiz</h1>
+        <div className={styles.container}>
+            <h1 className={styles.title}>Join Quiz</h1>
 
             {quizzes.length === 0 && <p>No quizzes found</p>}
 
-            {quizzes.map((q) => (
-                <div key={q.id} style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
-                    <h3>{q.title}</h3>
-                    <button onClick={() => startQuiz(q)}>
-                        Start
-                    </button>
-                </div>
-            ))}
+            <div className={styles.quizList}>
+                {quizzes.map((q) => (
+                    <div key={q.id} className={styles.quizCard}>
+                        <h3 className={styles.quizTitle}>{q.title}</h3>
+                        <Button onClick={() => startQuiz(q)}>
+                            Start
+                        </Button>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
