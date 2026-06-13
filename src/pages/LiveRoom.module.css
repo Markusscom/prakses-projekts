@@ -1,0 +1,19 @@
+.container {
+  padding: var(--spacing-lg);
+  max-width: 800px;
+  margin: auto;
+  font-family: var(--font-family);
+  background-color: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-top: 20px;
+}
+
+.title {
+  color: var(--primary-color);
+}
+
+.player {
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--gray-200);
+}

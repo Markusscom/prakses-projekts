@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { subscribeRoom } from "../realtime/roomChannel";
+import styles from "./LiveRoom.module.css";
 
 export default function LiveRoom() {
   const { code } = useParams();
@@ -81,8 +82,8 @@ export default function LiveRoom() {
   }
 
   return (
-    <div>
-      <h1>Room {code}</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Room {code}</h1>
 
       <h2>Status: {room.status}</h2>
 
@@ -95,7 +96,7 @@ export default function LiveRoom() {
       {players
         .filter((p) => p.status !== "kicked")
         .map((player) => (
-          <div key={player.id}>
+          <div key={player.id} className={styles.player}>
             {player.nickname}
           </div>
         ))}
