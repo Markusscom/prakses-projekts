@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import styles from "./PlayQuiz.module.css";
+import Button from "../components/ui/Button";
 
 export default function PlayQuiz() {
   const { code } = useParams();
@@ -116,22 +118,25 @@ export default function PlayQuiz() {
   const q = quiz.questions[room.current_question];
 
   return (
-    <div>
+    <div className={styles.container}>
       <h2>Question {room.current_question + 1}</h2>
 
-      <h1>{q.question}</h1>
+      <h1 className={styles.questionTitle}>{q.question}</h1>
 
-      {q.answers.map((a, i) => (
-        <button
-          key={i}
-          disabled={answered}
-          onClick={() => answer(i)}
-        >
-          {a}
-        </button>
-      ))}
+      <div className={styles.answerGrid}>
+        {q.answers.map((a, i) => (
+          <Button
+            key={i}
+            disabled={answered}
+            onClick={() => answer(i)}
+            className={styles.answerButton}
+          >
+            {a}
+          </Button>
+        ))}
+      </div>
 
-      {answered && <h3>Waiting for next question...</h3>}
+      {answered && <h3 className={styles.waitingText}>Waiting for next question...</h3>}
     </div>
   );
 }
