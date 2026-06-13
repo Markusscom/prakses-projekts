@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import styles from "./Join.module.css";
 
 export default function Join() {
   const [code, setCode] = useState("");
@@ -21,24 +24,24 @@ export default function Join() {
   }
 
   return (
-    <div>
-      <h1>Join</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Join</h1>
 
-      <input
+      <Input
         placeholder="Code"
         value={code}
         onChange={(e) => setCode(e.target.value)}
       />
 
-      <input
+      <Input
         placeholder="Nickname (optional now)"
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
       />
 
-      <button onClick={joinRoom}>
+      <Button onClick={joinRoom}>
         Join
-      </button>
+      </Button>
     </div>
   );
 }
