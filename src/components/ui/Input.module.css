@@ -1,14 +1,14 @@
-.input-field {
+.inputField {
   padding: var(--spacing-sm);
   border: 1px solid var(--gray-200);
-  border-radius: 4px;
+  border-radius: var(--border-radius-md);
   font-size: 16px;
   font-family: var(--font-family);
   width: 100%;
   box-sizing: border-box;
 }
 
-.input-field:focus {
+.inputField:focus {
   outline: 2px solid var(--primary-color);
   border-color: transparent;
 }
