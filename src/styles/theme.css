@@ -1,23 +1,25 @@
 :root {
-  /* Kahoot-inspired Palette */
-  --primary-color: #46178f; /* Kahoot Purple */
-  --primary-hover: #371273;
-  --accent-red: #e21b3c;
-  --accent-blue: #1368ce;
-  --accent-yellow: #d89e00;
+  --primary-color: #5d21c4;
+  --primary-hover: #4a1a9e;
+  
+  --accent-red: #f2234a;
+  --accent-blue: #2d82f7;
+  --accent-yellow: #feca2c;
   --accent-green: #26890d;
   
-  --bg-color: #f2f2f2;
-  --text-color: #333333;
+  --bg-color: #f7f7f7;
+  --text-color: #1a1a1a;
   --white: #ffffff;
   
-  /* Typography */
-  --font-family: 'Montserrat', sans-serif;
+  --font-family: 'Poppins', 'Montserrat', sans-serif;
   
-  /* Playful Spacing/Radius */
-  --border-radius-lg: 16px;
-  --border-radius-md: 8px;
+  --border-radius-lg: 20px;
+  --border-radius-md: 12px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
+  
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
 }
