@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
-
+import styles from "./CreateQuiz.module.css";
 
 export default function CreateQuiz() {
     const [title, setTitle] = useState("");
@@ -85,8 +85,8 @@ export default function CreateQuiz() {
     }
 
     return (
-        <div style={{ padding: "20px" }}>
-            <h1>Create Quiz</h1>
+        <div className={styles.container}>
+            <h1 className={styles.title}>Create Quiz</h1>
 
             <Input
                 placeholder="Quiz title"
@@ -94,10 +94,8 @@ export default function CreateQuiz() {
                 onChange={handleTitle}
             />
 
-            <hr />
-
             {questions.map((q, qIndex) => (
-                <div key={qIndex} style={{ marginBottom: "20px" }}>
+                <div key={qIndex} className={styles.questionContainer}>
                     <h3>Question {qIndex + 1}</h3>
 
                     <Input
@@ -108,7 +106,7 @@ export default function CreateQuiz() {
                         }
                     />
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginTop: "10px" }}>
+                    <div className={styles.answersContainer}>
                         {q.answers.map((ans, aIndex) => (
                             <Input
                                 key={aIndex}
@@ -121,10 +119,11 @@ export default function CreateQuiz() {
                         ))}
                     </div>
 
-                    <div style={{ marginTop: "10px" }}>
+                    <div>
                         <label>Correct answer: </label>
 
                         <select
+                            className={styles.selectField}
                             value={q.correctAnswer}
                             onChange={(e) =>
                                 setCorrect(qIndex, e.target.value)
@@ -138,11 +137,9 @@ export default function CreateQuiz() {
                         </select>
                     </div>
 
-                    <Button variant="danger" onClick={() => removeQuestion(qIndex)} style={{marginTop: "10px"}}>
+                    <Button variant="danger" onClick={() => removeQuestion(qIndex)}>
                         Delete question
                     </Button>
-
-                    <hr />
                 </div>
             ))}
 
@@ -150,9 +147,7 @@ export default function CreateQuiz() {
                 + Add Question
             </Button>
 
-            <br /><br />
-
-            <Button onClick={saveQuiz}>
+            <Button onClick={saveQuiz} style={{marginLeft: "10px"}}>
                 Save Quiz
             </Button>
         </div>
