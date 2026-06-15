@@ -12,16 +12,24 @@ export default function PlayQuiz() {
   const [quiz, setQuiz] = useState(null);
   const [answered, setAnswered] = useState(false);
 
-  useEffect(() => {
-    load();
-
-    const interval = setInterval(loadRoom, 1000);
-
-    return () => clearInterval(interval);
-  }, [code]);
-
   async function load() {
-    await loadRoom();
+    const { data: roomData } = await supabase
+      .from("rooms")
+      .select("*")
+      .eq("code", code)
+      .single();
+
+    if (!roomData) return;
+
+    setRoom(roomData);
+
+    const { data: quizData } = await supabase
+      .from("quizzes")
+      .select("*")
+      .eq("id", roomData.quiz_id)
+      .single();
+
+    setQuiz(quizData);
 
     const { data: user } = await supabase.auth.getUser();
 
@@ -35,51 +43,32 @@ export default function PlayQuiz() {
     if (player?.status === "kicked") {
       navigate("/join");
     }
-
-    const { data: roomData } = await supabase
-      .from("rooms")
-      .select("*")
-      .eq("code", code)
-      .single();
-
-    setRoom(roomData);
-
-    const { data: quizData } = await supabase
-      .from("quizzes")
-      .select("*")
-      .eq("id", roomData.quiz_id)
-      .single();
-
-    setQuiz(quizData);
   }
 
-  async function loadRoom() {
-    const { data } = await supabase
-      .from("rooms")
-      .select("*")
-      .eq("code", code)
-      .single();
+  useEffect(() => {
+    load();
 
-    setRoom(data);
-  }
+    const interval = setInterval(() => {
+      load();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [code]);
 
   useEffect(() => {
     setAnswered(false);
   }, [room?.current_question]);
 
   useEffect(() => {
-    if (!room || !quiz) return;
-
-    if (room.status === "finished") {
+    if (room?.status === "finished") {
       navigate(`/results/${code}`);
     }
-  }, [room, quiz]);
+  }, [room, code, navigate]);
 
   async function answer(index) {
-    if (answered) return;
+    if (answered || !room || !quiz) return;
 
     const q = quiz.questions[room.current_question];
-
     const isCorrect = index === q.correctAnswer;
 
     const { data: user } = await supabase.auth.getUser();
@@ -99,7 +88,7 @@ export default function PlayQuiz() {
       is_correct: isCorrect
     });
 
-    if (isCorrect) {
+    if (isCorrect && player) {
       await supabase
         .from("players")
         .update({
@@ -111,17 +100,33 @@ export default function PlayQuiz() {
     setAnswered(true);
   }
 
-  if (!room || !quiz) return <h2>Loading...</h2>;
+  if (!room || !quiz) {
+    return (
+      <div className={styles.center}>
+        Loading...
+      </div>
+    );
+  }
 
-  if (room.status !== "playing") return <h2>Waiting...</h2>;
+  if (room.status !== "playing") {
+    return (
+      <div className={styles.center}>
+        Waiting for game to start...
+      </div>
+    );
+  }
 
   const q = quiz.questions[room.current_question];
 
   return (
     <div className={styles.container}>
-      <h2>Question {room.current_question + 1}</h2>
+      <h2 className={styles.questionNumber}>
+        Question {room.current_question + 1}
+      </h2>
 
-      <h1 className={styles.questionTitle}>{q.question}</h1>
+      <h1 className={styles.questionTitle}>
+        {q.question}
+      </h1>
 
       <div className={styles.answerGrid}>
         {q.answers.map((a, i) => (
@@ -129,14 +134,18 @@ export default function PlayQuiz() {
             key={i}
             disabled={answered}
             onClick={() => answer(i)}
-            className={styles.answerButton}
+            className={`${styles.answerButton} ${answered ? styles.locked : ""}`}
           >
             {a}
           </Button>
         ))}
       </div>
 
-      {answered && <h3 className={styles.waitingText}>Waiting for next question...</h3>}
+      {answered && (
+        <h3 className={styles.waitingText}>
+          Waiting for next question...
+        </h3>
+      )}
     </div>
   );
 }

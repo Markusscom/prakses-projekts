@@ -6,6 +6,7 @@ import Start from "./pages/Start";
 import Dashboard from "./pages/Dashboard";
 import CreateQuiz from "./pages/CreateQuiz";
 import Join from "./pages/Join";
+import Results from "./pages/Results";
 import LiveRoom from "./pages/LiveRoom";
 import PlayQuiz from "./pages/PlayQuiz";
 import Profile from "./pages/Profile";
@@ -16,7 +17,7 @@ import Navbar from "./components/Navbar";
 
 function Layout({ children }) {
   const location = useLocation();
-  const showNavbar = location.pathname !== "/login" && location.pathname !== "/profile";
+  const showNavbar = location.pathname !== "/login";
 
   return (
     <div className="app-container">
@@ -53,10 +54,19 @@ export default function App() {
             />
             
             <Route
-              path="/teacher-live"
+              path="/teacher-live/:code"
               element={
                 <AuthGuard>
                   <TeacherLive />
+                </AuthGuard>
+              }
+            />
+
+            <Route
+              path="/results/:code"
+              element={
+                <AuthGuard>
+                  <Results />
                 </AuthGuard>
               }
             />

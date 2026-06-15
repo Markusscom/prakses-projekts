@@ -11,14 +11,27 @@ export default function Join() {
   const navigate = useNavigate();
 
   async function joinRoom() {
-    const { data: user } = await supabase.auth.getUser();
+    if (!code || !nickname) {
+      alert("Enter code and nickname");
+      return;
+    }
 
-    await supabase.from("players").insert({
+    const { data: userData } = await supabase.auth.getUser();
+
+    const userId = userData?.user?.id || null;
+
+    const { error } = await supabase.from("players").insert({
       room_code: code,
-      user_id: user.user.id,
+      nickname: nickname,
+      user_id: userId,
       score: 0,
       status: "active"
     });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
     navigate(`/live/${code}`);
   }
@@ -28,13 +41,13 @@ export default function Join() {
       <h1 className={styles.title}>Join</h1>
 
       <Input
-        placeholder="Code"
+        placeholder="Room code"
         value={code}
         onChange={(e) => setCode(e.target.value)}
       />
 
       <Input
-        placeholder="Nickname (optional now)"
+        placeholder="Nickname"
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
       />

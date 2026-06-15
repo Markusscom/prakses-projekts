@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import Button from "../components/ui/Button";
 import Logo from "../assets/logo.png";
-import "./Start.module.css";
+import styles from "./Start.module.css";
 
 export default function Start() {
   const navigate = useNavigate();
@@ -32,19 +32,15 @@ export default function Start() {
   }
 
   return (
-    <div className="start-page">
-      <div className="start-card">
-        <img
-          src={Logo}
-          alt="Quizzard"
-          className="start-logo"
-        />
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <img src={Logo} alt="Quizzard" className={styles.logo} />
 
-        <p className="start-subtitle">
+        <p className={styles.subtitle}>
           Create quizzes, host games and challenge players in real time.
         </p>
 
-        <div className="start-buttons">
+        <div className={styles.buttons}>
           <Button onClick={() => navigate("/join")}>
             Join Game
           </Button>

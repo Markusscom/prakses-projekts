@@ -15,10 +15,6 @@ export default function CreateQuiz() {
         }
     ]);
 
-    function handleTitle(e) {
-        setTitle(e.target.value);
-    }
-
     function updateQuestion(index, value) {
         const copy = [...questions];
         copy[index].question = value;
@@ -49,8 +45,7 @@ export default function CreateQuiz() {
     }
 
     function removeQuestion(index) {
-        const copy = questions.filter((_, i) => i !== index);
-        setQuestions(copy);
+        setQuestions(questions.filter((_, i) => i !== index));
     }
 
     async function saveQuiz() {
@@ -59,20 +54,30 @@ export default function CreateQuiz() {
             return;
         }
 
-        const { error } = await supabase
-            .from("quizzes")
-            .insert([
-                {
-                    title,
-                    questions
-                }
-            ]);
+        const {
+            data: { user },
+            error: authError
+        } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            alert("User nav ielogojies!");
+            return;
+        }
+
+        const { error } = await supabase.from("quizzes").insert([
+            {
+                title,
+                questions,
+                user_id: user.id
+            }
+        ]);
 
         if (error) {
             console.log(error);
-            alert("Kļūda saglabājot");
+            alert("Kļūda saglabājot quiz");
         } else {
             alert("Quiz saglabāts!");
+
             setTitle("");
             setQuestions([
                 {
@@ -91,7 +96,7 @@ export default function CreateQuiz() {
             <Input
                 placeholder="Quiz title"
                 value={title}
-                onChange={handleTitle}
+                onChange={(e) => setTitle(e.target.value)}
             />
 
             {questions.map((q, qIndex) => (
@@ -137,7 +142,10 @@ export default function CreateQuiz() {
                         </select>
                     </div>
 
-                    <Button variant="danger" onClick={() => removeQuestion(qIndex)}>
+                    <Button
+                        variant="danger"
+                        onClick={() => removeQuestion(qIndex)}
+                    >
                         Delete question
                     </Button>
                 </div>
@@ -147,7 +155,7 @@ export default function CreateQuiz() {
                 + Add Question
             </Button>
 
-            <Button onClick={saveQuiz} style={{marginLeft: "10px"}}>
+            <Button onClick={saveQuiz} style={{ marginLeft: "10px" }}>
                 Save Quiz
             </Button>
         </div>

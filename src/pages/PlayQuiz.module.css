@@ -25,14 +25,35 @@
   border-radius: var(--border-radius-lg);
   cursor: pointer;
   border: none;
-  background-color: var(--white);
   box-shadow: var(--shadow-md);
-  transition: transform 0.1s, box-shadow 0.2s;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.answerButton:nth-child(4n+1) {
+  background: #e74c3c;
+  color: white;
+}
+
+.answerButton:nth-child(4n+2) {
+  background: #3498db;
+  color: white;
+}
+
+.answerButton:nth-child(4n+3) {
+  background: #f1c40f;
+  color: black;
+}
+
+.answerButton:nth-child(4n+4) {
+  background: #2ecc71;
+  color: white;
 }
 
 .answerButton:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
   box-shadow: var(--shadow-lg);
+  filter: brightness(1.05);
 }
 
 .answerButton:active:not(:disabled) {
@@ -40,12 +61,28 @@
 }
 
 .answerButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  filter: grayscale(30%);
 }
 
 .waitingText {
   margin-top: var(--spacing-lg);
   font-size: 1.5rem;
   color: var(--primary-color);
+}
+
+.center {
+  min-height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.questionNumber {
+  font-size: 1rem;
+  color: var(--muted-text);
+  margin-bottom: var(--spacing-sm);
 }

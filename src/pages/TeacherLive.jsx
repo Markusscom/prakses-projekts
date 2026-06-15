@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import styles from "./TeacherLive.module.css";
 
 export default function TeacherLive() {
   const { code } = useParams();
@@ -44,7 +45,8 @@ export default function TeacherLive() {
     const { data } = await supabase
       .from("players")
       .select("*")
-      .eq("room_code", code);
+      .eq("room_code", code)
+      .order("score", { ascending: false });
 
     setPlayers(data || []);
   }
@@ -59,6 +61,8 @@ export default function TeacherLive() {
         question_duration: 10
       })
       .eq("code", code);
+
+    load();
   }
 
   async function nextQuestion() {
@@ -81,46 +85,71 @@ export default function TeacherLive() {
         question_started_at: new Date().toISOString()
       })
       .eq("code", code);
+
+    load();
   }
 
-  async function kickPlayer(userId) {
+  async function kickPlayer(playerId) {
     await supabase
       .from("players")
-      .update({ status: "kicked" })
-      .eq("user_id", userId);
+      .delete()
+      .eq("id", playerId);
+
+    loadPlayers();
   }
 
-  if (!room) return <h2>Loading...</h2>;
+  if (!room) return <div className={styles.loading}>Loading...</div>;
 
   return (
-    <div>
-      <h1>Teacher Room: {code}</h1>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1>Room {code}</h1>
+        <p className={styles.status}>Status: {room.status}</p>
+      </div>
 
-      <h3>Status: {room.status}</h3>
+      <div className={styles.panel}>
+        <h2>Players ({players.length})</h2>
 
-      <h3>Players ({players.length})</h3>
+        {players.length === 0 && (
+          <p className={styles.empty}>No players yet</p>
+        )}
 
-      {players.map((p) => (
-        <div key={p.id}>
-          {p.user_id} | score: {p.score}
+        {players.map((p, i) => (
+          <div key={p.id} className={styles.player}>
+            <div className={styles.left}>
+              <span className={styles.rank}>{i + 1}</span>
+              <span className={styles.name}>
+                {p.nickname || "Unknown"}
+              </span>
+            </div>
 
-          <button onClick={() => kickPlayer(p.user_id)}>
-            Kick
+            <div className={styles.right}>
+              <span className={styles.score}>{p.score}</span>
+
+              <button
+                className={styles.kick}
+                onClick={() => kickPlayer(p.id)}
+              >
+                Kick
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.controls}>
+        {room.status === "waiting" && (
+          <button className={styles.start} onClick={startGame}>
+            Start Game
           </button>
-        </div>
-      ))}
+        )}
 
-      {room.status === "waiting" && (
-        <button onClick={startGame}>
-          Start Game
-        </button>
-      )}
-
-      {room.status === "playing" && (
-        <button onClick={nextQuestion}>
-          Next Question
-        </button>
-      )}
+        {room.status === "playing" && (
+          <button className={styles.next} onClick={nextQuestion}>
+            Next Question
+          </button>
+        )}
+      </div>
     </div>
   );
 }
