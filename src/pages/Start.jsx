@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import Button from "../components/ui/Button";
 import Logo from "../assets/logo.png";
-import "./Start.css";
+import "./Start.module.css";
 
 export default function Start() {
   const navigate = useNavigate();
