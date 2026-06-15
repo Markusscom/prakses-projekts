@@ -1,9 +1,25 @@
 import styles from "./Button.module.css";
 
-export default function Button({ children, onClick, variant = "primary", ...props }) {
-  const variantClass = variant === "primary" ? styles.btnPrimary : styles.btnDanger;
+export default function Button({
+  children,
+  onClick,
+  variant = "primary",
+  type = "button",
+  disabled = false,
+  ...props
+}) {
   return (
-    <button className={`${styles.btn} ${variantClass}`} onClick={onClick} {...props}>
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={[
+        styles.btn,
+        styles[variant],
+        disabled ? styles.disabled : ""
+      ].join(" ")}
+      {...props}
+    >
       {children}
     </button>
   );
