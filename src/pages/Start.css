@@ -1,0 +1,72 @@
+.start-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(
+    135deg,
+    #46178f 0%,
+    #6c2bd9 50%,
+    #8647ff 100%
+  );
+
+  padding: 20px;
+}
+
+.start-card {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+
+  padding: 50px;
+  border-radius: 24px;
+
+  text-align: center;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.start-icon {
+  font-size: 72px;
+  margin-bottom: 10px;
+}
+
+.start-card h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: #222;
+}
+
+.start-card p {
+  margin-top: 12px;
+  margin-bottom: 35px;
+
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.start-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.start-buttons button {
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+
+  transition: transform 0.2s ease;
+}
+
+.start-buttons button:hover {
+  transform: scale(1.03);
+}
+
+.start-logo {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  margin-bottom: 20px;
+}
