@@ -7,14 +7,12 @@ export default function AuthGuard({ children }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Pārbauda sākotnējo sesiju
+  useEffect(() => 
     supabase.auth.getUser().then(({ data }) => {
       setUser(data?.user ?? null);
       setLoading(false);
     });
 
-    // Klausās izmaiņas autentifikācijas statusā
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (!session) {
