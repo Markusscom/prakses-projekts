@@ -7,14 +7,21 @@ export default function AuthGuard({ children }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => 
+  useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data?.user ?? null);
       setLoading(false);
+
+      if (!data?.user) {
+        navigate("/login", { replace: true });
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+
       if (!session) {
         navigate("/login", { replace: true });
       }
